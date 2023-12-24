@@ -40,19 +40,11 @@ handler = RotatingFileHandler(
     'my_logger.log', maxBytes=50000000, backupCount=5)
 logger.addHandler(handler)
 
-# Создаем форматер
 formatter = logging.Formatter(
     '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-# Применяем его к хэндлеру
 handler.setFormatter(formatter)
-
-# logger.debug('123')
-# logger.info('Сообщение отправлено')
-# logger.warning('Большая нагрузка!')
-# logger.error('Бот не смог отправить сообщение')
-# logger.critical('Всё упало! Зовите админа!1!111')
 
 
 def check_tokens():
@@ -80,7 +72,6 @@ def get_api_answer(timestamp):
             ENDPOINT, headers=HEADERS, params=timestamp)
         if homework_statuses.status_code != HTTPStatus.OK:
             raise ValueError
-        pprint(homework_statuses.json())
         return homework_statuses.json()
     except homework_statuses.exceptions.RequestException as request_error:
         msg_api = (f'Ошибка сервера.'
@@ -134,12 +125,8 @@ def main():
         raise exit()
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-
-    # timestamp = {'from_date': int(time.time() - REQUESTED_TIME)}
     last_massage = ''
     timestamp = {'from_date': 0}
-    # api_response = get_api_answer(timestamp)
-    # result_response = check_response(api_response)
 
     while True:
         try:
