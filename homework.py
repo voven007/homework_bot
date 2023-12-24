@@ -11,7 +11,6 @@ import telegram
 
 from dotenv import load_dotenv
 from http import HTTPStatus
-from pprint import pprint
 
 
 load_dotenv()
