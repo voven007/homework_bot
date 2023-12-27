@@ -46,6 +46,18 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 
 
+class ApiStatusNotOkException(Exception):
+    """Ответ сервера не равен 200."""
+
+
+class ApiException(Exception):
+    """Ошибка сервера."""
+
+
+class IsNotFindKeyException(Exception):
+    """Не найден ключ в домашней работе."""
+
+
 def check_tokens():
     """Проверка доступности переменных окружения."""
     return all((PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID))
@@ -71,12 +83,12 @@ def get_api_answer(timestamp):
             msg_api = (
                 f'Адрес {ENDPOINT} недоступен,'
                 f'код ответа {homework_statuses.status_code}')
-            raise Exception(msg_api)
+            raise ApiStatusNotOkException(msg_api)
         return homework_statuses.json()
     except homework_statuses.exceptions.RequestException as request_error:
         msg_api = (f'Ошибка сервера.'
                    f'Код ответа API (RequestException): {request_error}')
-        raise msg_api
+        raise ApiException(msg_api)
     return (homework_statuses.json())
 
 
@@ -99,11 +111,9 @@ def parse_status(homework):
     """Извлечение статуса работы."""
     homework_name = homework.get('homework_name')
     if homework_name is None:
-        # parse_status_name = (
-        #     f'Ключ {homework_name} не найден в информации о домашней работе'
-        # )
-        # raise KeyError(parse_status_name)
-        raise Exception('Ключ не найден в информации о домашней работе')
+        raise IsNotFindKeyException(
+            'Ключ не найден в информации о домашней работе'
+        )
     else:
         homework_status = homework['status']
     if homework_status not in HOMEWORK_VERDICTS:
@@ -122,7 +132,7 @@ def main():
     if not check_tokens():
         message = 'Отсутствует переменная окружения'
         logger.critical(message + '\nПрограмма остановлена.')
-        raise exit()
+        exit()
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     last_massage = ''
