@@ -8,6 +8,7 @@ import requests
 import time
 import telegram
 
+from error import ApiStatusNotOkException, ApiException, IsNotFindKeyException
 
 from dotenv import load_dotenv
 from http import HTTPStatus
@@ -46,18 +47,6 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 
 
-class ApiStatusNotOkException(Exception):
-    """Ответ сервера не равен 200."""
-
-
-class ApiException(Exception):
-    """Ошибка сервера."""
-
-
-class IsNotFindKeyException(Exception):
-    """Не найден ключ в домашней работе."""
-
-
 def check_tokens():
     """Проверка доступности переменных окружения."""
     return all((PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID))
@@ -78,7 +67,7 @@ def get_api_answer(timestamp):
     """Запрос к эндпоинту API Сервиса."""
     try:
         homework_statuses = requests.get(
-            ENDPOINT, headers=HEADERS, params=timestamp)
+            ENDPOINT, headers=HEADERS, params={'from_date': timestamp})
         if homework_statuses.status_code != HTTPStatus.OK:
             msg_api = (
                 f'Адрес {ENDPOINT} недоступен,'
@@ -133,10 +122,9 @@ def main():
         message = 'Отсутствует переменная окружения'
         logger.critical(message + '\nПрограмма остановлена.')
         exit()
-
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     last_massage = ''
-    timestamp = {'from_date': int(time.time())}
+    timestamp = int(time.time())
     while True:
         try:
             api_response = get_api_answer(timestamp)
